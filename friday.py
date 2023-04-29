@@ -9,22 +9,66 @@ import os
 import pyautogui  # pip install pyautogui ,for screenshot
 import psutil  # pip install psutil ,for battery and cpu usage
 import pyjokes  # pip install pyjokes,for jokes
+import subprocess as sp
 
 
 engine = pyttsx3.init()
 
+paths = {
+    'calculator': "C:\\Windows\\System32\\calc.exe",
+}
 
-def speak(audio):
-    engine.say(audio)
+def open_camera():
+    sp.run('start microsoft.windows.camera:', shell=True)
+
+#Reminder
+def set_reminder(engine, command):
+    speak(engine, "What should I remind you about?")
+    reminder = listen()
+    speak(engine, "When do you want to be reminded? Please say the time in hours and minutes.")
+    reminder_time = listen()
+    try:
+        hour, minute = map(int, reminder_time.split())
+        now = datetime.datetime.now()
+        reminder_datetime = now.replace(hour=hour, minute=minute)
+        if now > reminder_datetime:
+            reminder_datetime += datetime.timedelta(days=1)
+        speak(engine, f"Alright, I will remind you about '{reminder}' at {hour:02d}:{minute:02d}.")
+        while True:
+            if datetime.datetime.now() >= reminder_datetime:
+                speak(engine, f"Reminder: {reminder}")
+                break
+    except ValueError:
+        speak(engine, "Sorry, I couldn't understand the time you provided. Please try again.")
+
+# To DO List
+def create_todo_list(engine, command):
+    todo_list = []
+    speak(engine, "Let's create a to-do list. Please say the tasks one by one. Say 'done' when you're finished.")
+    while True:
+        task = listen()
+        if task == "done":
+            break
+        todo_list.append(task)
+        speak(engine, f"Added: {task}")
+    speak(engine, "Here's your to-do list:")
+    for task in todo_list:
+        speak(engine, task)
+
+# Text to Speech Conversion
+def speak(text):
+    """Used to speak whatever text is passed to it"""
+
+    engine.say(text)
     engine.runAndWait()
 
-
+#Current Time
 def time():
     Time = datetime.datetime.now().strftime("%I:%M:%S")
     speak("the current time is")
     speak(Time)
 
-
+#Current Date
 def date():
     year = int(datetime.datetime.now().year)
     month = int(datetime.datetime.now().month)
@@ -33,8 +77,10 @@ def date():
     speak(date)
     speak(month)
     speak(year)
+def calculator():
+    os.startfile(paths['calculator'])
 
-
+# Greetings
 def wishme():
     speak("Welcome back!")
     hour = datetime.datetime.now().hour
@@ -49,23 +95,31 @@ def wishme():
     speak("Friday at your service Please tell me how can i help you?")
 
 
-def takeCommand():
+# Takes Input from User
+def take_user_input():
+    """Takes user input, recognizes it using Speech Recognition module and converts it into text"""
+    
     r = sr.Recognizer()
     with sr.Microphone() as source:
-        print("Listening.....")
+        print('Listening....')
         r.pause_threshold = 1
         audio = r.listen(source)
 
     try:
-        print("Recognizing...")
+        print('Recognizing...')
         query = r.recognize_google(audio, language='en-in')
-        print(query)
-
-    except Exception as e:
-        print(e)
-        speak("unable to recogninize!Say again please!")
-        return "None"
-
+        if not 'exit' in query or 'stop' in query:
+            speak(choice(opening_text))
+        else:
+            hour = datetime.now().hour
+            if hour >= 21 and hour < 6:
+                speak("Good night sir, take care!")
+            else:
+                speak('Have a good day sir!')
+            exit()
+    except Exception:
+        speak('Sorry, I could not understand. Could you please say that again?')
+        query = 'None'
     return query
 
 
@@ -113,6 +167,21 @@ if __name__ == '__main__':
             result = wikipedia.summary(query, sentences=2)
             print(result)
             speak(result)
+            
+        elif 'youtube' in query:
+            speak('What do you want to play on Youtube, sir?')
+            video = take_user_input().lower()
+            play_on_youtube(video)
+        
+        elif 'weather' in query:
+            ip_address = find_my_ip()
+            city = requests.get(f"https://ipapi.co/{ip_address}/city/").text
+            speak(f"Getting weather report for your city {city}")
+            weather, temperature, feels_like = get_weather_report(city)
+            speak(f"The current temperature is {temperature}, but it feels like {feels_like}")
+            speak(f"Also, the weather report talks about {weather}")
+            speak("For your convenience, I am printing it on the screen sir.")
+            print(f"Description: {weather}\nTemperature: {temperature}\nFeels like: {feels_like}")
 
         elif 'send mail' in query:
             try:
@@ -145,6 +214,12 @@ if __name__ == '__main__':
             remember = open('data.txt', 'w')
             remember.write(data)
             remember.close()
+        
+        elif "reminder" in command:
+            set_reminder(engine, command)
+            
+        elif "to-do" in command or "todo" in command:
+            create_todo_list(engine, command)
 
         elif 'have anything friday' in query:
             remember = open('data.txt', 'r')
