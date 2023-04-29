@@ -17,62 +17,56 @@ engine = pyttsx3.init()
 paths = {
     'calculator': "C:\\Windows\\System32\\calc.exe",
 }
-
-
-# Reminder class
-class Reminder:    
+ 
     #Reminder
-    def set_reminder(engine, command):
-        speak(engine, "What should I remind you about?")
-        reminder = listen()
-        speak(engine, "When do you want to be reminded? Please say the time in hours and minutes.")
-        reminder_time = listen()
-        try:
-            hour, minute = map(int, reminder_time.split())
-            now = datetime.datetime.now()
-            reminder_datetime = now.replace(hour=hour, minute=minute)
-            if now > reminder_datetime:
-                reminder_datetime += datetime.timedelta(days=1)
-            speak(engine, f"Alright, I will remind you about '{reminder}' at {hour:02d}:{minute:02d}.")
-            while True:
-                if datetime.datetime.now() >= reminder_datetime:
-                    speak(engine, f"Reminder: {reminder}")
-                    break
-        except ValueError:
-            speak(engine, "Sorry, I couldn't understand the time you provided. Please try again.")
+def set_reminder(engine, command):
+    speak(engine, "What should I remind you about?")
+    reminder = listen()
+    speak(engine, "When do you want to be reminded? Please say the time in hours and minutes.")
+    reminder_time = listen()
+    try:
+        hour, minute = map(int, reminder_time.split())
+        now = datetime.datetime.now()
+        reminder_datetime = now.replace(hour=hour, minute=minute)
+        if now > reminder_datetime:
+            reminder_datetime += datetime.timedelta(days=1)
+        speak(engine, f"Alright, I will remind you about '{reminder}' at {hour:02d}:{minute:02d}.")
+        while True:
+            if datetime.datetime.now() >= reminder_datetime:
+                speak(engine, f"Reminder: {reminder}")
+                break
+    except ValueError:
+        speak(engine, "Sorry, I couldn't understand the time you provided. Please try again.")
         
         # To DO List
-    def create_todo_list(engine, command):
-        todo_list = []
-        speak(engine, "Let's create a to-do list. Please say the tasks one by one. Say 'done' when you're finished.")
-        while True:
-            task = listen()
-            if task == "done":
-                break
-            todo_list.append(task)
-            speak(engine, f"Added: {task}")
-        speak(engine, "Here's your to-do list:")
-        for task in todo_list:
-            speak(engine, task)
+def create_todo_list(engine, command):
+    todo_list = []
+    speak(engine, "Let's create a to-do list. Please say the tasks one by one. Say 'done' when you're finished.")
+    while True:
+        task = listen()
+        if task == "done":
+            break
+        todo_list.append(task)
+        speak(engine, f"Added: {task}")
+    speak(engine, "Here's your to-do list:")
+    for task in todo_list:
+        speak(engine, task)
 
+    #Current Time
+def time():
+    Time = datetime.datetime.now().strftime("%I:%M:%S")
+    speak("the current time is")
+    speak(Time)
 
-# derived class
-class TimeDate(Reminder): 
-        #Current Time
-    def time():
-        Time = datetime.datetime.now().strftime("%I:%M:%S")
-        speak("the current time is")
-        speak(Time)
-
-    #Current Date
-    def date():
-        year = int(datetime.datetime.now().year)
-        month = int(datetime.datetime.now().month)
-        date = int(datetime.datetime.now().day)
-        speak("the current date is")
-        speak(date)
-        speak(month)
-        speak(year) 
+#Current Date
+def date():
+    year = int(datetime.datetime.now().year)
+    month = int(datetime.datetime.now().month)
+    date = int(datetime.datetime.now().day)
+    speak("the current date is")
+    speak(date)
+    speak(month)
+    speak(year) 
 
 
 # Text to Speech Conversion
@@ -151,15 +145,14 @@ def jokes():
 if __name__ == '__main__':
     wishme()
     while True:
-        query = takeCommand().lower()
-        reminder_obj = TimeDate()    
+        query = takeCommand().lower()  
         if 'remind me' in query:
             reminder_obj.set_reminder()
         elif 'to do' in query:
             reminder_obj.create_todo_list()
         elif 'time' in query or 'date' in query:
-            reminder_obj.time()
-            reminder_obj.date()
+            time()
+            date()
         elif 'wikipedia' in query:
             speak("Searching....")
             query = query.replace("wikipedia", "")
