@@ -127,14 +127,6 @@ def take_user_input():
     return query
 
 
-def sendEmail(to, content):
-    server = smtplib.SMTP('smtp.gmail.com', 587)
-    server.ehlo()
-    server.starttls()
-    server.login('email@gmail.com', '1234')
-    server.sendmail('email@gmail.com', to, content)
-    server.close()
-
 def open_camera():
     sp.run('start microsoft.windows.camera:', shell=True)
     
@@ -181,7 +173,6 @@ if __name__ == '__main__':
             play_on_youtube(video)
         
         elif 'weather' in query:
-            ip_address = find_my_ip()
             city = requests.get(f"https://ipapi.co/{ip_address}/city/").text
             speak(f"Getting weather report for your city {city}")
             weather, temperature, feels_like = get_weather_report(city)
@@ -190,29 +181,12 @@ if __name__ == '__main__':
             speak("For your convenience, I am printing it on the screen sir.")
             print(f"Description: {weather}\nTemperature: {temperature}\nFeels like: {feels_like}")
 
-        elif 'send mail' in query:
-            try:
-                speak('what should I say,sir!')
-                content = takeCommand()
-                to = 'otheraddress@yahoo.com'
-                sendEmail(to, content)
-                speak("ok sir,the mail has been sent")
-            except Exception as e:
-                print(e)
-                speak("unable to send mail,sir")
-
         elif 'search in chrome' in query:
             speak("What should I search,sir?")
             chromepath = 'C:/Program Files/Google/Chrome/Application/chrome.exe %s'
             search = takeCommand().lower()
             wb.get(chromepath).open_new_tab(search+".com")
             speak("Here you go sir!")
-
-        elif 'play songs' in query:
-            songs_dir = 'C:/Users/kumar/OneDrive/Desktop/Music'
-            songs = os.listdir(songs_dir)
-            speak("ok sir,playing song")
-            os.startfile(os.path.join(songs_dir, songs[0]))
 
         elif 'remember that' in query:
             speak("what should i remeber?")
@@ -234,6 +208,10 @@ if __name__ == '__main__':
 
         elif 'screenshot' in query:
             screenshot()
+            speak("done boss!")
+         
+        elif 'camera' in query:
+            camera()
             speak("done boss!")
 
         elif 'cpu' in query:
